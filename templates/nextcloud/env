@@ -1,0 +1,4 @@
+PORT=8080
+APP_PATH=nextcloud_sub-domain-com
+POSTGRES_PASSWORD=password
+DOMAIN=domain.com

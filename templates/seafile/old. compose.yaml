@@ -1,0 +1,65 @@
+# Port for reverse proxy: 80
+services:
+  db:
+    image: mariadb:10.11
+    container_name: ${APPNAME}_mysql
+    environment:
+      - MYSQL_LOG_CONSOLE=true
+      - MARIADB_AUTO_UPGRADE=1
+      - MARIADB_ROOT_PASSWORD=${MYSQLROOT}
+    volumes:
+      - $VOLPATH/mysql:/var/lib/mysql
+    healthcheck:
+      test:
+        - CMD
+        - /usr/local/bin/healthcheck.sh
+        - --connect
+        - --mariadbupgrade
+        - --innodb_initialized
+      interval: 20s
+      start_period: 30s
+      timeout: 5s
+      retries: 10
+  memcached:
+    image: memcached:1.6.29
+    container_name: ${APPNAME}_memcached
+    entrypoint: memcached -m 256
+
+  seafile:
+    image: seafileltd/seafile-mc:12.0-latest}
+    container_name: ${APPNAME}
+    networks:
+      - $PROXYNETWORK
+    volumes:
+      - $VOLPATH/shared:/shared
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=seafile
+      - DB_ROOT_PASSWD=${MYSQLROOT}
+      - DB_PASSWORD=${MYSQLPASSWORD}
+      - SEAFILE_MYSQL_DB_CCNET_DB_NAME=ccnet_db
+      - SEAFILE_MYSQL_DB_SEAFILE_DB_NAME=seafile_db
+      - SEAFILE_MYSQL_DB_SEAHUB_DB_NAME=seahub_db
+      - TIME_ZONE=America/Los_Angeles
+      - INIT_SEAFILE_ADMIN_EMAIL=${ADMINEMAIL}
+      - INIT_SEAFILE_ADMIN_PASSWORD=${ADMINADMITPASSWORD}
+      - SEAFILE_SERVER_HOSTNAME=${APPURL}
+      - SEAFILE_SERVER_PROTOCOL=http
+      - SITE_ROOT=seafile.stillcrazy.pro
+      - NON_ROOT=false
+      - SEAFILE_LOG_TO_STDOUT=false
+      - ENABLE_SEADOC=true
+      - SEADOC_SERVER_URL=${APPURL}/sdoc-server
+      - JWT_PRIVATE_KEY=$JWTPRIVATEKEY
+    depends_on:
+      db:
+        condition: service_healthy
+      memcached:
+        condition: service_started
+    networks:
+      - $PROXYNETWORK
+ 
+networks:
+  $PROXYNETWORK:
+    external: yes

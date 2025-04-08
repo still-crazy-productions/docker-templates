@@ -1,0 +1,9 @@
+APP_BASE_URL=https://notes.stillcrazy.pro
+APP_PORT=22300
+DB_CLIENT=pg
+POSTGRES_PASSWORD=password
+POSTGRES_DATABASE=joplin
+POSTGRES_USER=joplin
+POSTGRES_PORT=5432
+POSTGRES_HOST=db
+APP_PATH=joplin_notes-stillcrazy-pro

@@ -1,0 +1,37 @@
+services:
+  unifi-controller:
+    image: jacobalberty/unifi:latest
+    container_name: "{$HOST}-unifi"
+    restart: unless-stopped
+    environment:
+      - TZ=America/Los_Angeles
+    volumes:
+      - /opt/volumes/{$HOST}-unifi/data:/unifi
+      - /etc/localtime:/etc/localtime:ro
+    labels:
+      - traefik.enable=true
+      
+      # Web UI (HTTPS)
+      - traefik.http.routers.{$HOST}-unifi-ui.rule=Host(`{$HOST}.unifi.daileycomputer.com`)
+      - traefik.http.routers.{$HOST}-unifi-ui.entrypoints=websecure
+      - traefik.http.routers.{$HOST}-unifi-ui.tls=true
+      - traefik.http.routers.{$HOST}-unifi-ui.tls.certresolver=myresolver
+      - traefik.http.routers.{$HOST}-unifi-ui.service={$HOST}-unifi-ui  # <-- Explicit service
+      - traefik.http.services.{$HOST}-unifi-ui.loadbalancer.server.scheme=https
+      - traefik.http.services.{$HOST}-unifi-ui.loadbalancer.server.port=8443
+      - traefik.http.middlewares.{$HOST}-unifi-headers.headers.customrequestheaders.X-Forwarded-Proto=https
+      - traefik.http.middlewares.{$HOST}-unifi-headers.headers.customrequestheaders.X-Forwarded-Port=443
+      - traefik.http.routers.{$HOST}-unifi-ui.middlewares=unifi-headers
+
+      # Inform (HTTP, port 8080)
+      - traefik.http.routers.{$HOST}-unifi-inform.rule=Host(`{$HOST}.unifi.daileycomputer.com`) && PathPrefix(`/inform`)
+      - traefik.http.routers.{$HOST}-unifi-inform.entrypoints=web
+      - traefik.http.routers.{$HOST}-unifi-inform.service=unifi-inform # <-- Explicit service
+      - traefik.http.services.{$HOST}-unifi-inform.loadbalancer.server.port=8080
+      - traefik.http.services.{$HOST}-unifi-inform.loadbalancer.server.scheme=http
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

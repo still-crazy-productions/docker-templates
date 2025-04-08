@@ -1,0 +1,127 @@
+# This setup works to get a Unifi controller working, with ports exposed to the docker host.
+
+# Unifi compose.yaml
+services:
+  unifi-controller:
+    image: jacobalberty/unifi:latest
+    container_name: unifi-dcci-daileycomputer-com
+    restart: unless-stopped
+    environment:
+      - TZ=America/Los_Angeles
+    volumes:
+      - /opt/volumes/dcci-unifi-daileycomputer-com/data:/unifi
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "3478:3478/udp"     # STUN
+      - "10001:10001/udp"   # Device discovery
+      - "18080:8080"         # Inform
+      - "8880:8880"         # HTTP portal redirect
+      - "8843:8843"         # HTTPS guest portal
+      - "6789:6789"         # Speed test
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.unifi-ui.rule=Host(`dcci.unifi.daileycomputer.com`)
+      - traefik.http.routers.unifi-ui.entrypoints=websecure
+      - traefik.http.routers.unifi-ui.tls=true
+      - traefik.http.routers.unifi-ui.tls.certresolver=myresolver
+      - traefik.http.services.unifi-ui.loadbalancer.server.scheme=https
+      - traefik.http.services.unifi-ui.loadbalancer.server.port=8443
+      # CRITICAL middleware headers to fix UniFi
+      - traefik.http.middlewares.unifi-headers.headers.customrequestheaders.X-Forwarded-Proto=https
+      - traefik.http.middlewares.unifi-headers.headers.customrequestheaders.X-Forwarded-Port=443
+      - traefik.http.routers.unifi-ui.middlewares=unifi-headers
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
+
+
+    # Traefik compose yaml
+    services:
+  traefik:
+    image: traefik:v3.3
+    container_name: traefik
+    restart: unless-stopped
+    ports:
+      - "80:80"               # HTTP
+      - "443:443"             # HTTPS
+      - "8080:8080"           # Dashboard - disable in production!
+    command:
+      - "--api.insecure=true"   # Enable dashboard (for testing, disable in production)
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=support@daileycomputer.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - "--log.level=DEBUG"
+      - "--serversTransport.insecureSkipVerify=true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /opt/volumes/traefik/letsencrypt:/letsencrypt    # Ensure this folder exists and contains acme.json with 600 permissions
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
+
+    # system.properties file for Unifi
+daileycomputer@host4:/opt/stacks/traefik$ cat /opt/volumes/dcci-unifi-daileycomputer-com/data/data/system.properties
+## system.properties
+#
+# each unifi instance requires a set of ports:
+#
+## device inform
+# unifi.http.port=8080
+## controller UI / API
+# unifi.https.port=8443
+## portal redirect port for HTTP
+# portal.http.port=8880
+## portal redirect port for HTTPs
+# portal.https.port=8843
+## local-bound port for DB server
+# unifi.db.port=27117
+## UDP port used for STUN
+# unifi.stun.port=3478
+#
+## the IP devices should be talking to for inform
+# system_ip=a.b.c.d
+## disable mongodb journaling
+# unifi.db.nojournal=false
+## extra mongod args
+# unifi.db.extraargs
+#
+## HTTPS options
+# unifi.https.ciphers=TLS_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_128_CBC_SHA
+# unifi.https.sslEnabledProtocols=TLSv1,SSLv2Hello
+# unifi.https.hsts=false
+# unifi.https.hsts.max_age=31536000
+# unifi.https.hsts.preload=false
+# unifi.https.hsts.subdomain=false
+#
+# Ports reserved for device redirector. There is no need to open
+# firewall for these ports on controller, however do NOT set
+# controller to use these ports.
+#
+# portal.redirector.port=8881
+# portal.redirector.port.wired=8882
+#
+# Port used for throughput measurement.
+# unifi.throughput.port=6789
+#
+#Tue Apr 01 21:25:39 UTC 2025
+reporter-uuid=46905d79-4c55-4c18-a76c-f68060a1db6c
+debug.device=warn
+unifi.https.redirect=false
+debug.mgmt=warn
+debug.setting_preference=auto
+is_default=false
+debug.system=warn
+uuid=9692b129-1374-4268-b039-3de56b61c3ef
+debug.sdn=warn

@@ -1,0 +1,2 @@
+PORT=7575
+HOMEPAGE_ALLOWED_HOSTS=home.yoururl.com

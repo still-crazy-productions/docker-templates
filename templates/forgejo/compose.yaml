@@ -1,0 +1,17 @@
+services:
+  forgejo:
+    image: codeberg.org/forgejo/forgejo:10
+    container_name: forgejo
+    ports:
+      - $PORT:3000
+      - $SSHPORT:22
+    volumes:
+      - ./data:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - npm_network
+    restart: always
+networks:
+  npm_network:
+    external: true

@@ -1,0 +1,24 @@
+services:
+  nginx-proxy-manager:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: $APP_PATH
+    restart: always
+    ports:
+      - $HTTP_PORT:80 # HTTP
+      - $HTTPS_PORT:443 # HTTPS
+      - $WEBUI_PORT:81 # Web UI
+    volumes:
+      - npm_data:/data
+      - npm_letsencrypt:/etc/letsencrypt
+    environment:
+      - TZ=America/Los_Angeles # Change to your timezone
+      - DISABLE_IPV6=true # Optional: Disable IPv6 if needed
+    networks:
+      - npm_network
+networks:
+  npm_network:
+    name: npm_network
+    driver: bridge
+volumes:
+  npm_data: null
+  npm_letsencrypt: null

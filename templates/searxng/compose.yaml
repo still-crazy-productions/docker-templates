@@ -1,0 +1,53 @@
+services:
+  redis:
+    container_name: redis
+    image: docker.io/valkey/valkey:8-alpine
+    command: valkey-server --save 30 1 --loglevel warning
+    restart: unless-stopped
+    networks:
+      - searxng
+    volumes:
+      - /opt/volumes/search-stillcrazy-pro/valkey:/data
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
+
+  searxng:
+    container_name: searxng
+    image: docker.io/searxng/searxng:latest
+    restart: unless-stopped
+    networks:
+      - searxng
+      - npm_network
+    volumes:
+      - /opt/volumes/search-stillcrazy-pro/searxng:/etc/searxng:rw
+    environment:
+      - SEARXNG_HOSTNAME=search.stillcrazy.pro
+      - SEARXNG_BASE_URL=https://search.stillcrazy.pro
+      - UWSGI_WORKERS=4
+      - UWSGI_THREADS=4
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
+
+networks:
+  searxng:
+    external: false
+  npm_network:
+    external: true

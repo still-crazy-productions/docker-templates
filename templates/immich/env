@@ -1,0 +1,9 @@
+PORT=2283
+APP_PATH=immich_sub-domain-com
+UPLOAD_LOCATION=/mnt/HC_Volume_102169245/immich/library
+DB_DATA_LOCATION=/mnt/HC_Volume_102169245/immich/postgres
+TZ=America/Los_Angeles
+IMMICH_VERSION=release
+DB_PASSWORD=postgres
+DB_USERNAME=postgres
+DB_DATABASE_NAME=immich

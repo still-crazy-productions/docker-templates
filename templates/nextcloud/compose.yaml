@@ -1,0 +1,55 @@
+services:
+  nextcloud:
+    image: nextcloud:latest
+    container_name: ${APP_PATH}_app
+    restart: unless-stopped
+    depends_on:
+      - db
+      - redis
+    ports:
+      - $PORT:80
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_DB=nextcloud
+      - POSTGRES_USER=nextcloud
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+      - NEXTCLOUD_TRUSTED_DOMAINS=$DOMAIN
+      - NEXTCLOUD_OVERWRITEHOST=$DOMAIN
+      - NEXTCLOUD_OVERWRITEPROTOCOL=https
+    volumes:
+      - ./html:/var/www/html
+      - ./html/custom_apps:/var/www/html/custom_apps
+      - ./html/config:/var/www/html/config
+      - ./html/data:/var/www/html/data
+
+  db:
+    image: postgres:15
+    container_name: ${APP_PATH}-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=nextcloud
+      - POSTGRES_USER=nextcloud
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+    volumes:
+      - ./db:/var/lib/postgresql/data
+
+  redis:
+    image: redis:alpine
+    container_name: ${APP_PATH}-redis
+    restart: unless-stopped
+    environment:
+      - REDIS_MAXMEMORY=512mb
+      - REDIS_MAXMEMORY_POLICY=allkeys-lru
+    command: redis-server --appendonly yes
+    volumes:
+      - ./redis:/data
+
+  nextcloud-cron:
+    image: nextcloud:latest
+    container_name: ${APP_PATH}-cron
+    restart: unless-stopped
+    depends_on:
+      - nextcloud
+    entrypoint: /cron.sh
+    volumes:
+      - ./html:/var/www/html

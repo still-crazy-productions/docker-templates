@@ -1,0 +1,29 @@
+networks:
+  npm_network:
+    external: true
+
+services:
+  headscale:
+    image: headscale/headscale:latest
+    container_name: vpn-stillcrazy-pro
+    command: serve
+    volumes:
+      - /opt/volumes/vpn-stillcrazy-pro/config:/etc/headscale
+      - /opt/volumes/vpn-stillcrazy-pro/data:/var/lib/headscale
+    networks:
+      - npm_network
+    ports:
+      - "41641:41641/udp"  # 👈 Expose the Noise protocol port for client connections
+    restart: unless-stopped
+
+  headscale-ui:
+    image: ghcr.io/gurucomputing/headscale-ui:latest
+    container_name: ui-vpn-stillcrazy-pro
+    environment:
+      - HS_SERVER=http://vpn-stillcrazy-pro:8090
+      - HS_API_KEY=k0nHmIRzSf5jYJ9i7SoATYjYJWg5gcrRY2O5wtdYArrJJuN4
+    depends_on:
+      - headscale
+    networks:
+      - npm_network
+    restart: unless-stopped
