@@ -7,7 +7,6 @@ server:
 
 headscale:
   url: "https://vpn.stillcrazy.pro"
-  apiKey: "4shv8Z4.opY9m092fO8p_mDqN-RwdQ8CCzsfTe2r"
   config_path: "/etc/headscale/config.yaml"
   config_strict: false
 
