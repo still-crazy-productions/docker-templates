@@ -1,0 +1,18 @@
+# Headpllane config file
+server:
+  host: "0.0.0.0"
+  port: 3000
+  cookie_secret: "Zdh06mcIedZghodu3h8DqiXEIVWNza15"
+  cookie_secure: false  # Set to true if you're not behind a proxy
+
+headscale:
+  url: "https://vpn.stillcrazy.pro"
+  apiKey: "4shv8Z4.opY9m092fO8p_mDqN-RwdQ8CCzsfTe2r"
+  config_path: "/etc/headscale/config.yaml"
+  config_strict: false
+
+integration:
+  docker:
+    enabled: true
+    container_name: "vpn-stillcrazy-pro"
+    socket: "unix:///var/run/docker.sock"

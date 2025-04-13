@@ -1,0 +1,11 @@
+# MongoDB root credentials
+MONGO_INITDB_ROOT_USERNAME=root
+MONGO_INITDB_ROOT_PASSWORD=EnwrzB1EmnyjVW61GXJlkDXPqb8B9XpKDO8Ib949shLQIE0h
+
+# MongoDB UniFi user credentials
+MONGO_USER=unifi
+MONGO_PASS=C4mbhbTvrakqKfF9Kb5n41VKmcN9ImqxKQauw2vBNs8jiteZ
+
+# MongoDB database name (for UniFi)
+MONGO_DBNAME=unifi
+MONGO_AUTHSOURCE=admin

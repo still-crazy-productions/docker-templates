@@ -1,0 +1,68 @@
+services:
+  nextcloud:
+    image: nextcloud:latest
+    container_name: cloud-stillcrazy-pro
+    restart: unless-stopped
+    depends_on:
+      - db
+      - redis
+    networks:
+      - npm_network
+      - cloud-stillcrazy-network
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_DB=nextcloud
+      - POSTGRES_USER=nextcloud
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+      - NEXTCLOUD_TRUSTED_DOMAINS=$DOMAIN
+      - NEXTCLOUD_OVERWRITEHOST=$DOMAIN
+      - NEXTCLOUD_OVERWRITEPROTOCOL=https
+    volumes:
+      - /opt/volumes/cloud-stillcrazy-pro/html:/var/www/html
+      - /opt/volumes/cloud-stillcrazy-pro/html/custom_apps:/var/www/html/custom_apps
+      - /opt/volumes/cloud-stillcrazy-pro/html/config:/var/www/html/config
+      - /opt/volumes/cloud-stillcrazy-pro/html/data:/var/www/html/data
+
+  db:
+    image: postgres:15
+    container_name: cloud-stillcrazy-pro-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=nextcloud
+      - POSTGRES_USER=nextcloud
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+    networks:
+      - cloud-stillcrazy-network
+    volumes:
+      - /opt/volumes/cloud-stillcrazy-pro/db:/var/lib/postgresql/data
+
+  redis:
+    image: redis:alpine
+    container_name: cloud-stillcrazy-pro-redis
+    restart: unless-stopped
+    environment:
+      - REDIS_MAXMEMORY=512mb
+      - REDIS_MAXMEMORY_POLICY=allkeys-lru
+    command: redis-server --appendonly yes
+    networks:
+      - cloud-stillcrazy-network
+    volumes:
+      - /opt/volumes/cloud-stillcrazy-pro/redis:/data
+
+  nextcloud-cron:
+    image: nextcloud:latest
+    container_name: nextcloud_cloud-stillcrazy-pro-cron
+    restart: unless-stopped
+    depends_on:
+      - nextcloud
+    entrypoint: /cron.sh
+    networks:
+      - cloud-stillcrazy-network
+    volumes:
+      - /opt/volumes/cloud-stillcrazy-pro/html:/var/www/html
+
+networks:
+  npm_network:
+    external: true
+  cloud-stillcrazy-network:
+    external: false

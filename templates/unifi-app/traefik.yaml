@@ -1,0 +1,23 @@
+serversTransport:
+  insecureSkipVerify: true
+
+entryPoints:
+  web:
+    address: ":80"
+  websecure:
+    address: ":443"
+  stun:
+    address: ":3478/udp"
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: "rdailey@daileycomputer.com"
+      storage: "/letsencrypt/acme.json"
+      httpChallenge:
+        entryPoint: "web"

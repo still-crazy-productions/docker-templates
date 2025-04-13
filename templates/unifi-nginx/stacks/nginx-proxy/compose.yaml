@@ -1,0 +1,26 @@
+services:
+  nginx-proxy:
+    image: nginx:stable-alpine
+    container_name: nginx-proxy
+    restart: unless-stopped
+    ports:
+      # HTTP/HTTPS
+      - "80:80"
+      - "443:443"
+      # UniFi UDP/TCP ports
+      - "3478:3478/udp"     # STUN
+      - "10001:10001/udp"   # Discovery
+      - "8080:8080"         # Inform (HTTP)
+    volumes:
+      - /opt/volumes/nginx-proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+      - /opt/volumes/nginx-proxy/conf.d:/etc/nginx/conf.d
+      - /opt/volumes/nginx-proxy/stream.d:/etc/nginx/stream.d
+      - /opt/volumes/nginx-proxy/certs:/etc/nginx/certs
+      - /opt/volumes/nginx-proxy/vhost.d:/etc/nginx/vhost.d
+      - /opt/volumes/nginx-proxy/html:/usr/share/nginx/html
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

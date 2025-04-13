@@ -1,29 +1,33 @@
-networks:
-  npm_network:
-    external: true
-
+# Defaule docker compose file for running Headscale, with Headplane as a web gui
+# Headscale default listening port is 8080
+# Headplane default listening port is 3000
 services:
   headscale:
-    image: headscale/headscale:latest
     container_name: vpn-stillcrazy-pro
-    command: serve
+    image: headscale/headscale:stable
+    restart: unless-stopped
+    networks:
+      - npm_network
+      - headscale_net
     volumes:
       - /opt/volumes/vpn-stillcrazy-pro/config:/etc/headscale
       - /opt/volumes/vpn-stillcrazy-pro/data:/var/lib/headscale
-    networks:
-      - npm_network
-    ports:
-      - "41641:41641/udp"  # 👈 Expose the Noise protocol port for client connections
-    restart: unless-stopped
+    entrypoint: headscale serve
 
-  headscale-ui:
-    image: ghcr.io/gurucomputing/headscale-ui:latest
-    container_name: ui-vpn-stillcrazy-pro
-    environment:
-      - HS_SERVER=http://vpn-stillcrazy-pro:8090
-      - HS_API_KEY=k0nHmIRzSf5jYJ9i7SoATYjYJWg5gcrRY2O5wtdYArrJJuN4
-    depends_on:
-      - headscale
+  headplane:
+    image: ghcr.io/tale/headplane:0.5.10
+    container_name: headplane
+    restart: unless-stopped
     networks:
       - npm_network
-    restart: unless-stopped
+      - headscale_net
+    volumes:
+      - '/opt/volumes/vpn-stillcrazy-pro/config/config.yaml:/etc/headscale/config.yaml'
+      - '/opt/volumes/vpn-stillcrazy-pro/config/headplaneconfig.yaml:/etc/headplane/config.yaml'
+      - '/opt/volumes/vpn-stillcrazy-pro/headplane-data:/var/lib/headplane'
+      - '/var/run/docker.sock:/var/run/docker.sock:ro'
+
+networks:
+  npm_network:
+    external: true
+  headscale_net:

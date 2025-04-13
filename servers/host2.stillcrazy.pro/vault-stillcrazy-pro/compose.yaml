@@ -1,0 +1,18 @@
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vault-stillcrazy-pro
+    restart: always
+    networks:
+      - npm_network
+    environment:
+      - DOMAIN=$DOMAIN
+      - WEBSOCKET_ENABLED=true
+      - SIGNUPS_ALLOWED=false  # Change to 'true' if you want to allow new signups
+      - ADMIN_TOKEN=$ADMIN_TOKEN
+    volumes:
+      - /opt/volumes/vault-stillcrazy-pro/vw-data:/data
+
+networks:
+  npm_network:
+    external: true

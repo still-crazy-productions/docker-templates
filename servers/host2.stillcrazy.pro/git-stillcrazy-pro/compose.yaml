@@ -1,0 +1,16 @@
+services:
+  forgejo:
+    image: codeberg.org/forgejo/forgejo:10
+    container_name: git-stillcrazy-pro
+    environment:
+      - ROOT_URL=https://git.stillcrazy.pro
+    volumes:
+      - /opt/volumes/git-stillcrazy-pro/data:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - npm_network
+    restart: always
+networks:
+  npm_network:
+    external: true

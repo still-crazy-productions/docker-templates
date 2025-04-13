@@ -1,0 +1,17 @@
+services:
+  dockge:
+    image: louislam/dockge:1
+    container_name: dockge-host2-stillcrazy-pro
+    restart: unless-stopped
+    networks:
+      - npm_network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt/volumes/dockge-host2-stillcrazy-pro/data:/app/data
+      - /opt/stacks:/opt/stacks
+    environment:
+      - /opt/stacks=/opt/stacks
+
+networks:
+  npm_network:
+    external: true
