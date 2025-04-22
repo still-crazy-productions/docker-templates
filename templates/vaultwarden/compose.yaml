@@ -1,0 +1,48 @@
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden-${CLIENT}
+    networks:
+      - proxy
+    volumes:
+      - /opt/docker/vaultwarden/${CLIENT}/data:/data
+    environment:
+#      - ADMIN_TOKEN=$ADMIN_TOKEN
+      - SIGNUPS_ALLOWED=true
+      - SIGNUPS_DOMAINS_WHITELIST=daileycomputer.com
+      - WEBSOCKET_ENABLED=true
+      - DOMAIN=https://${CLIENT}.vault.daileycomputer.com
+      - ORGANIZATIONS_ENABLED=true
+      - ORG_CREATION_USERS=support@daileycomputer.com
+      - ENABLE_HIBP=false
+      - ENABLE_PASSWORD_POLICY=true
+      - PASSWORD_POLICY_CHARSETS=uppercase,lowercase,numbers
+      - PASSWORD_POLICY_MIN_LENGTH=8
+      - SMTP_HOST=heracles.mxrouting.net
+      - SMTP_FROM=noreply@daileycomputer.com
+      - SMTP_PORT=465
+      - SMTP_SECURITY=force_tls  # or "force_tls" or "off"
+      - SMTP_USERNAME=noreply@daileycomputer.com
+      - SMTP_PASSWORD=${SMTP_PASS}
+      - SMTP_AUTH_MECHANISM="Login"  # (optional: Plain, Login, or XOAUTH2)
+    labels:
+      - "traefik.enable=true"
+
+      # HTTP to HTTPS redirect
+      - "traefik.http.routers.vaultwarden-${CLIENT}.entrypoints=web"
+      - "traefik.http.routers.vaultwarden-${CLIENT}.rule=Host(`${CLIENT}.vault.daileycomputer.com`)"
+      - "traefik.http.routers.vaultwarden-${CLIENT}.middlewares=redirect-to-https@file"
+
+      # HTTPS router
+      - "traefik.http.routers.vaultwarden-${CLIENT}-secure.entrypoints=websecure"
+      - "traefik.http.routers.vaultwarden-${CLIENT}-secure.rule=Host(`${CLIENT}.vault.daileycomputer.com`)"
+      - "traefik.http.routers.vaultwarden-${CLIENT}-secure.tls=true"
+      - "traefik.http.routers.vaultwarden-${CLIENT}-secure.tls.certresolver=letsencrypt"
+
+      # WebSocket support
+      - "traefik.http.services.vaultwarden-${CLIENT}.loadbalancer.server.port=80"
+      - "traefik.http.routers.vaultwarden-${CLIENT}-secure.service=vaultwarden-${CLIENT}"
+
+networks:
+  proxy:
+    external: true

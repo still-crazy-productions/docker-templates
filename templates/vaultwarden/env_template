@@ -1,0 +1,3 @@
+CLIENT=client # This will be both the client's subdomain (client.vault.daileycomputer.com) and Docker compose folder on the server (/opt/docker/vaultwarden/client)
+SMTP_PASS=mzItMMC1OweaBgn1plNYv1mkbsFn8Pxt # Don't change! noreply@daileycomputer.com hosted at MXRoute
+ADMIN_TOKEN=$$argon2id$$v=19$$m=65540,t=3,p=4$$SnNpMHg3RTJXemsvVVZaeklnM1RSZzhicUZYRlpEdlovYjV5MWNTVjFqdz0$$9LEaklxn8KNwSbZVxytz9oCOxxDMzzXIq1x4gx3urpk
